@@ -18,6 +18,7 @@
 
 namespace JMS\Serializer;
 
+use JMS\Serializer\Exception\RequiredPropertyException;
 use JMS\Serializer\Exception\RuntimeException;
 use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
@@ -162,6 +163,12 @@ abstract class GenericDeserializationVisitor extends AbstractVisitor
     {
         $name = $this->namingStrategy->translateName($metadata);
 
+        $v = (isset($data[$name]) && $data[$name] !== null) ? $this->navigator->accept($data[$name], $metadata->type, $context) : null;
+
+        if (null === $v && $metadata->required) {
+            throw new RequiredPropertyException($metadata->name . ' is a required field.');
+        }
+
         if (null === $data) {
             return;
         }
@@ -177,8 +184,6 @@ abstract class GenericDeserializationVisitor extends AbstractVisitor
         if (!$metadata->type) {
             throw new RuntimeException(sprintf('You must define a type for %s::$%s.', $metadata->reflection->class, $metadata->name));
         }
-
-        $v = $data[$name] !== null ? $this->navigator->accept($data[$name], $metadata->type, $context) : null;
 
         $this->accessor->setValue($this->currentObject, $v, $metadata);
 

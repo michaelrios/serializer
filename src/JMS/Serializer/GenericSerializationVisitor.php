@@ -19,6 +19,7 @@
 namespace JMS\Serializer;
 
 use JMS\Serializer\Exception\InvalidArgumentException;
+use JMS\Serializer\Exception\RequiredPropertyException;
 use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 
@@ -153,8 +154,15 @@ abstract class GenericSerializationVisitor extends AbstractVisitor
         $v = $this->accessor->getValue($data, $metadata);
 
         $v = $this->navigator->accept($v, $metadata->type, $context);
-        if (null === $v && $context->shouldSerializeNull() !== true) {
-            return;
+
+        if (null === $v) {
+            if ($metadata->required) {
+                throw new RequiredPropertyException($metadata->name . ' is a required field.');
+            }
+
+            if ($context->shouldSerializeNull() !== true) {
+                return;
+            }
         }
 
         $k = $this->namingStrategy->translateName($metadata);
