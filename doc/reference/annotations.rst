@@ -255,6 +255,11 @@ should be inlined.
 objects with this annotation. Also, AccessorOrder will be using the name of the property
 to determine the order.
 
+@Required
+~~~~~~~~~
+This annotation can be defined on a property to indicate that the data of the property
+is required. A ``RequiredPropertyException`` will be thrown if the value is null or the property is not passed.
+
 @ReadOnly
 ~~~~~~~~~
 This annotation can be defined on a property to indicate that the data of the property
